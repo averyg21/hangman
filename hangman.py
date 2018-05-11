@@ -4,6 +4,7 @@ wn = turtle.Screen()		#create turtle screen (window)
 frank = turtle.Turtle()		#create turtle to use on window
 
 def returnWord():
+	"""Return the word that you're looking for"""
 	#may need to put utf coding for windows
 	myFile = open("dictionary.txt","r", encoding="UTF-8")
 	xs = myFile.read()
