@@ -1,7 +1,7 @@
 import turtle
 
-wn = turtle.Screen()		#create turtle screen (window)
-frank = turtle.Turtle()		#create turtle to use on window
+#wn = turtle.Screen()		#create turtle screen (window)
+#frank = turtle.Turtle()		#create turtle to use on window
 
 def returnWord():
 	"""Return the word that you're looking for"""
@@ -29,17 +29,42 @@ def welcome():
 	"""Welcome message for the game"""
 	print("Welcome to the hangman game.")
 	print("If you guess the word before")
-	print("the hangman is built, you win!");
+	print("the hangman is built, you win!\n")
 
-def startPos():
-	"""reset the starting position with this method."""
+def promptUser():
+	"""Ask the user for difficulty of the word
+	& return the correct answer.
+	"""
+	flag = True
+
+	while(flag == True):
+		print("Difficulty levels are: Easy, Medium, & Hard")
+		answer = input("Input difficulty: ")
+
+		if(answer.lower() == "easy" or answer.lower() == "e"):
+			answer = "easy"
+			print("You've answered Easy.\n")
+			flag = False
+		elif(answer.lower() == "medium" or answer.lower() == "m"):
+			answer = "medium"
+			print("You've answered Medium.\n")
+			flag = False
+		elif(answer.lower() == "hard" or answer.lower() == "h"):
+			answer = "hard"
+			print("You've answered Hard.\n")
+			flag = False
+		else:
+			print("Please enter a correct answer.\n")
+
+	return answer.lower()
+
+def drawOutline():
+	"""Initially reset the starting position then draw the outline"""
 	frank.penup()
 	frank.setx(-100)
 	frank.sety(-100)
 	frank.pendown()
 	frank.pensize(1)
-
-def drawOutline():
 	frank.forward(100)
 	frank.back(50)
 	frank.left(90)
@@ -101,13 +126,9 @@ def drawBody():
 	wn.mainloop()
 
 def drawTorso():
-    frank.pendown()
-    frank.forward(100)
-    x = frank.xcor()
-    y = frank.ycor()
-    print("X Cor is:", x)
-    print("Y Cor is:", y)
-    frank.backward(80)
+	frank.pendown()
+	frank.forward(100)
+	frank.backward(80)
 
 def leftArm():
     frank.right(45)
@@ -151,11 +172,9 @@ def rightLeg():
     frank.pendown()
     frank.right(45)
 
-
-
-startPos()
-drawOutline()
-drawBody()
-#welcome()
+welcome()
+answer = promptUser()
+#drawOutline()
+#drawBody()
 #randWord()
 #returnWord()
