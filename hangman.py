@@ -1,29 +1,84 @@
 import turtle
+from random import randint
 
 #wn = turtle.Screen()		#create turtle screen (window)
 #frank = turtle.Turtle()		#create turtle to use on window
+final_def = []
+definitions = []
+dif_list = []
 
-def returnWord():
-	"""Return the word that you're looking for"""
-	#may need to put utf coding for windows
-	myFile = open("dictionary.txt","r", encoding="UTF-8")
-	xs = myFile.read()
-	#split file into sentences
-	sentences = xs.split('\n')
-	flag = True
-	x = 0
-	while(flag == True):
-		if(x > 15):
-			break
-		#individual = sentences.pop(0)
-		print(sentences[x])
-		#print("Last sentence is: ", individual)
-		x = x + 1
-	#for sentence in sentences:
-	#	print(sentence)
-	myFile.close()
-	#print(words)
-	#print(xs)
+def fillDefinitions():
+	"""Populate the definition lists with dictionary"""
+	try:
+		with open('dictionary.txt','r',encoding='UTF-8') as file_object:
+			for line in file_object:
+				definitions.append(line)
+	except IOError:
+		print("Couldn't open file.")
+
+
+def returnWord(difficulty):
+	"""Method returns randomly generated word from difficulty lists.
+
+	***For later iteration improvements***
+	When returning the string after you found word
+	slice from 2nd to end so you won't show word too.
+	1. Look at inserting into 2D List like: [word,definition]
+	2. Checkout tuples if those don't work.
+
+	Method gets a randomNum (one less than list length) and selects word
+	Following lines check to see if word is found with flag,
+	turn sentence -> string, split the sentence into words lists.
+	Checks to see if lists is empty (.txt file spacing), passes if
+	it is. Else checks for vocab word in hardDef lists & prints it
+	to screen. Also changes flag to false.
+	"""
+
+	if(difficulty.lower() == "easy"):
+		#input easy words into lists
+		dif_list = ["dupe","mesmerize","underwrite","pinnacle",
+		"embroiled","profuse","vindictive","censor","unnerve",
+		"zenith","summit","thrifty","spendthrift","candid",
+		"insolvent","erratic","amiable","indict","indigenous",
+		"acme","tender","tirade","dog","remiss","pine","reprobate",
+		"inundate","telling","diabolical","macabre","inflammatory",
+		"demure","variance","peruse","affable","indignant","slapdash",
+		"screed","affluent","thoroughgoing","bleak","stipend","demean",
+		"hound","serendipity","miser","telltale","voracious","retiring",
+		"err"]
+
+		#pick random word based on random number
+		#place into finalWord
+		rand_end = len(dif_list) - 1
+		randNum = randint(0,rand_end)
+		final_word = dif_list[randNum]
+	elif(difficulty.lower() == "medium"):
+		#input into medium word lists
+		print("Medium works")
+	else:
+		#input into hard word lists
+		print("Hard works")
+
+	return final_word
+
+def returnDef(word):
+	"""Method returns word/definition based on
+	dictionary.txt
+	"""
+	for sentence in definitions:
+		str1 = sentence
+		wordsList = str1.split()
+
+		#checks to see if lists is empty
+		if not wordsList:
+			pass
+		else:
+			if(word.lower() == wordsList[0].lower()):
+				final_def = wordsList[1:]
+				print(word, "-", *final_def)
+				break
+			else:
+				continue
 
 def welcome():
 	"""Welcome message for the game"""
@@ -56,7 +111,7 @@ def promptUser():
 		else:
 			print("Please enter a correct answer.\n")
 
-	return answer.lower()
+	return answer
 
 def drawOutline():
 	"""Initially reset the starting position then draw the outline"""
@@ -173,7 +228,10 @@ def rightLeg():
     frank.right(45)
 
 welcome()
+fillDefinitions()
 answer = promptUser()
+word = returnWord(answer)
+returnDef(word)
 #drawOutline()
 #drawBody()
 #randWord()
