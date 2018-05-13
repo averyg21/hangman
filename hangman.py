@@ -3,16 +3,17 @@ from random import randint
 
 #wn = turtle.Screen()		#create turtle screen (window)
 #frank = turtle.Turtle()		#create turtle to use on window
-final_def = []
-definitions = []
-dif_list = []
+#global variables
+FINAL_DEF = []
+DEFINITIONS = []
+DIF_LIST = []
 
 def fillDefinitions():
 	"""Populate the definition lists with dictionary"""
 	try:
 		with open('dictionary.txt','r',encoding='UTF-8') as file_object:
 			for line in file_object:
-				definitions.append(line)
+				DEFINITIONS.append(line)
 	except IOError:
 		print("Couldn't open file.")
 
@@ -36,7 +37,7 @@ def returnWord(difficulty):
 
 	if(difficulty.lower() == "easy"):
 		#input easy words into lists
-		dif_list = ["dupe","mesmerize","underwrite","pinnacle",
+		DIF_LIST = ["dupe","mesmerize","underwrite","pinnacle",
 		"embroiled","profuse","vindictive","censor","unnerve",
 		"zenith","summit","thrifty","spendthrift","candid",
 		"insolvent","erratic","amiable","indict","indigenous",
@@ -49,12 +50,26 @@ def returnWord(difficulty):
 
 		#pick random word based on random number
 		#place into finalWord
-		rand_end = len(dif_list) - 1
+		rand_end = len(DIF_LIST) - 1
 		randNum = randint(0,rand_end)
-		final_word = dif_list[randNum]
+		final_word = DIF_LIST[randNum]
 	elif(difficulty.lower() == "medium"):
 		#input into medium word lists
-		print("Medium works")
+		DIF_LIST = ["harangue","calumny","prodigal","ambiguous","upbraid",
+		"parsimony","impertinent","prevaricate","castigate","betray",
+		"venerate","disinterested","laconic","intimate","commensurate",
+		"mercurial","maintain","restive","amenable","anomalous","artful",
+		"belie","frugal","qualify","undermine","gregarious","involved",
+		"demur","amalgam","innocuous","vindicate","ingenuous","wanting",
+		"enervate","galvanize","ambivalent","iconoclast","acrimony", "extant",
+		"censure","auspicious","chastise","parochial","aberration","amorphous",
+		"veracious","equivocal","profligate","egregious"]
+
+		#pick random word based on random number
+		#place into finalWord
+		rand_end = len(DIF_LIST) - 1
+		randNum = randint(0,rand_end)
+		final_word = DIF_LIST[randNum]
 	else:
 		#input into hard word lists
 		print("Hard works")
@@ -65,7 +80,7 @@ def returnDef(word):
 	"""Method returns word/definition based on
 	dictionary.txt
 	"""
-	for sentence in definitions:
+	for sentence in DEFINITIONS:
 		str1 = sentence
 		wordsList = str1.split()
 
@@ -74,8 +89,8 @@ def returnDef(word):
 			pass
 		else:
 			if(word.lower() == wordsList[0].lower()):
-				final_def = wordsList[1:]
-				print(word, "-", *final_def)
+				FINAL_DEF = wordsList[1:]
+				print(word, "-", *FINAL_DEF)
 				break
 			else:
 				continue
