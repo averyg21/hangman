@@ -72,6 +72,7 @@ def returnWord(difficulty):
 		final_word = DIF_LIST[randNum]
 	else:
 		#input into hard word lists
+		DIF_LIST = []
 		print("Hard works")
 
 	return final_word
@@ -85,6 +86,7 @@ def returnDef(word):
 		wordsList = str1.split()
 
 		#checks to see if lists is empty
+		#skips blank lines
 		if not wordsList:
 			pass
 		else:
@@ -127,6 +129,79 @@ def promptUser():
 			print("Please enter a correct answer.\n")
 
 	return answer
+
+def userAnswer(validWord):
+	"""Get answer from user. Let them guess whole answer or let
+	them guess one answer at a time.
+	"""
+	counter = 6
+	blankString = []
+	wordLength = len(validWord)
+	complete = wordLength
+	for letter in validWord:
+		blankString.append("_")
+	while True and counter >= 0:
+		try:
+			#guessing the word
+			guessType = int(input("\n1 to guess word, 2 to guess letter, 3 for lives: "))
+			if (guessType == 1):
+				ansGuess = input("Guess the word: ")
+				if(ansGuess.lower() == validWord.lower()):
+					print("\nYou guessed the correct answer!")
+					print("Word was: " + validWord + "\n")
+					break
+				else:
+					print("Not the answer")
+					counter = counter - 1
+
+			#individually guessing letters
+			elif (guessType == 2):
+				#initialize list to hold letters & retrive
+				#the length of the word, set flag to see if
+				#anything was entered into the list
+				flag = False
+
+				ansLetter = input("Input ONE letter: ")
+				check = len(ansLetter)
+				#check to see if your receiving one valid letter
+				if(check == 1 and ansLetter.isalpha()):
+					for x in range(0,wordLength):
+						if(ansLetter == validWord[x]):
+							blankString[x] = ansLetter
+							complete = complete - 1
+							flag = True
+
+					#print message whether right or wrong
+					if(flag == False):
+						print('Letter not in word.')
+						counter = counter - 1
+					else:
+						print(*blankString)
+						print()
+
+					if (complete == 0):
+						print("\nYou guessed the word!")
+						print("Word was: " + validWord + "\n")
+						break
+				else:
+					print("INPUT ONLY ONE VALID LETTER! LIMB TAKEN AWAY!")
+					counter = counter - 1
+
+			elif(guessType == 3):
+				if (counter > 2):
+					print("You have ", counter, " lives left\n")
+				else:
+					print("You have ", counter, " life left\n")
+
+			else:
+				print("Please input a 1 2 or 3.\n")
+				continue
+		except ValueError:
+			print("Please enter a correct NUMBER!\n")
+
+	if(counter < 0):
+		print("Sorry you didn't solve for the word.")
+
 
 def drawOutline():
 	"""Initially reset the starting position then draw the outline"""
@@ -242,11 +317,12 @@ def rightLeg():
     frank.pendown()
     frank.right(45)
 
-welcome()
+#welcome()
 fillDefinitions()
 answer = promptUser()
 word = returnWord(answer)
 returnDef(word)
+userAnswer(word)
 #drawOutline()
 #drawBody()
 #randWord()
