@@ -1,12 +1,10 @@
 import turtle
 from random import randint
 
-#wn = turtle.Screen()		#create turtle screen (window)
-#frank = turtle.Turtle()		#create turtle to use on window
 #global variables
 FINAL_DEF = []
 DEFINITIONS = []
-DIF_LIST = []
+BLANKSTRING = []
 
 def fillDefinitions():
 	"""Populate the definition lists with dictionary"""
@@ -72,8 +70,12 @@ def returnWord(difficulty):
 		final_word = DIF_LIST[randNum]
 	else:
 		#input into hard word lists
-		DIF_LIST = []
-		print("Hard works")
+		DIF_LIST = ["jaundiced","cupidity","schadenfreude","blinkered",
+		"execrate","malapropism","hedge","tendentious","excoriate","limpid",
+		"histrionic"]
+		rand_end = len(DIF_LIST) - 1
+		randNum = randint(0,rand_end)
+		final_word = DIF_LIST[randNum]
 
 	return final_word
 
@@ -84,6 +86,7 @@ def returnDef(word):
 	for sentence in DEFINITIONS:
 		str1 = sentence
 		wordsList = str1.split()
+		end = len(wordsList)
 
 		#checks to see if lists is empty
 		#skips blank lines
@@ -91,11 +94,13 @@ def returnDef(word):
 			pass
 		else:
 			if(word.lower() == wordsList[0].lower()):
-				FINAL_DEF = wordsList[1:]
-				print(word, "-", *FINAL_DEF)
+				for x in range(1,end):
+					FINAL_DEF.append(wordsList[x])
 				break
 			else:
 				continue
+
+	printFinalDeff()
 
 def welcome():
 	"""Welcome message for the game"""
@@ -126,32 +131,38 @@ def promptUser():
 			print("You've answered Hard.\n")
 			flag = False
 		else:
-			print("Please enter a correct answer.\n")
+			print("\nPlease enter a correct answer.\n")
 
 	return answer
 
 def userAnswer(validWord):
-	"""Get answer from user. Let them guess whole answer or let
-	them guess one answer at a time.
+	"""Get answer from user. Let them guess whole word or one
+	letter at a time. Also draws body on wrong answer throgh
+	counter and drawBody() method
 	"""
 	counter = 6
-	blankString = []
 	wordLength = len(validWord)
 	complete = wordLength
+	repeatList = []
 	for letter in validWord:
-		blankString.append("_")
+		BLANKSTRING.append("_")
 	while True and counter >= 0:
 		try:
 			#guessing the word
-			guessType = int(input("\n1 to guess word, 2 to guess letter, 3 for lives: "))
+			printFinalWord()
+			guessType = int(input("\n1 to guess word, 2 to guess letter," +
+			" 3 for definition: "))
 			if (guessType == 1):
 				ansGuess = input("Guess the word: ")
 				if(ansGuess.lower() == validWord.lower()):
 					print("\nYou guessed the correct answer!")
 					print("Word was: " + validWord + "\n")
+					print("Exit the hangman window to" +
+					" close the program...")
 					break
 				else:
 					print("Not the answer")
+					drawBody(counter)
 					counter = counter - 1
 
 			#individually guessing letters
@@ -164,34 +175,41 @@ def userAnswer(validWord):
 				ansLetter = input("Input ONE letter: ")
 				check = len(ansLetter)
 				#check to see if your receiving one valid letter
-				if(check == 1 and ansLetter.isalpha()):
-					for x in range(0,wordLength):
-						if(ansLetter == validWord[x]):
-							blankString[x] = ansLetter
-							complete = complete - 1
-							flag = True
+				if (ansLetter.lower() not in repeatList):
+					if(check == 1 and ansLetter.isalpha()):
+						for x in range(0,wordLength):
+							if(ansLetter.lower() == validWord[x]):
+								BLANKSTRING[x] = ansLetter.lower()
+								complete = complete - 1
+								flag = True
+								repeatList.append(ansLetter.lower())
 
-					#print message whether right or wrong
-					if(flag == False):
-						print('Letter not in word.')
-						counter = counter - 1
+						#print message whether right or wrong
+						if(flag == False):
+							print('\nLetter not in word.')
+							drawBody(counter)
+							counter = counter - 1
+						else:
+							print()
+
+						if (complete == 0):
+							print("\nYou guessed the word!")
+							print("Word was: " + validWord + "\n")
+							print("Exit the hangman window to" +
+							" close the program...")
+							break
 					else:
-						print(*blankString)
-						print()
-
-					if (complete == 0):
-						print("\nYou guessed the word!")
-						print("Word was: " + validWord + "\n")
-						break
+						print("INPUT ONLY ONE VALID LETTER! GUESS TAKEN AWAY!")
+						drawBody(counter)
+						counter = counter - 1
 				else:
-					print("INPUT ONLY ONE VALID LETTER! LIMB TAKEN AWAY!")
+					print("Letter already input, guess taken away")
+					drawBody(counter)
 					counter = counter - 1
 
 			elif(guessType == 3):
-				if (counter > 2):
-					print("You have ", counter, " lives left\n")
-				else:
-					print("You have ", counter, " life left\n")
+				print()
+				printFinalDeff()
 
 			else:
 				print("Please input a 1 2 or 3.\n")
@@ -200,11 +218,14 @@ def userAnswer(validWord):
 			print("Please enter a correct NUMBER!\n")
 
 	if(counter < 0):
-		print("Sorry you didn't solve for the word.")
+		print("\nSorry you didn't solve for the word.")
+		print("Word was: ", validWord)
+		print("Exit the hangman window to close the program...")
 
 
 def drawOutline():
 	"""Initially reset the starting position then draw the outline"""
+	frank.hideturtle()
 	frank.penup()
 	frank.setx(-100)
 	frank.sety(-100)
@@ -219,111 +240,156 @@ def drawOutline():
 	frank.right(180)
 
 def drawFace():
-    """start x: 50 & y: 80"""
-    frank.penup()
-    frank.setx(50)
-    frank.sety(80)
-    frank.pendown()
-    frank.left(135)
-    frank.forward(14)
-    frank.backward(7)
-    frank.left(90)
-    frank.forward(7)
-    frank.backward(14)
-    frank.penup()
-    frank.forward(7)
-    frank.left(45)
-    frank.forward(13)
-    frank.left(45)
-    frank.pendown()
-    frank.forward(7)
-    frank.backward(14)
-    frank.penup()
-    frank.forward(7)
-    frank.left(90)
-    frank.backward(7)
-    frank.pendown()
-    frank.forward(14)
-    frank.penup()
-    frank.right(45)
-    frank.forward(10)
-    frank.left(90)
-    frank.backward(5)
-    frank.pendown()
-    frank.forward(20)
-    frank.penup()
-
-
-def drawBody():
-	frank.circle(20)
+	"""start x: 50 & y: 80"""
+	frank.setheading(275)
+	frank.penup()
+	frank.setx(50)
+	frank.sety(80)
+	frank.pendown()
+	frank.left(135)
+	frank.forward(14)
+	frank.backward(7)
 	frank.left(90)
+	frank.forward(7)
+	frank.backward(14)
 	frank.penup()
-	frank.forward(40)
-	#drawFace()
-	drawTorso()
-	leftArm()
-	rightArm()
-	leftLeg()
-	rightLeg()
-	drawFace()
+	frank.forward(7)
+	frank.left(45)
+	frank.forward(13)
+	frank.left(45)
+	frank.pendown()
+	frank.forward(7)
+	frank.backward(14)
 	frank.penup()
-	frank.forward(100)
-	wn.mainloop()
+	frank.forward(7)
+	frank.left(90)
+	frank.backward(7)
+	frank.pendown()
+	frank.forward(14)
+	frank.penup()
+	frank.right(45)
+	frank.forward(10)
+	frank.left(90)
+	frank.backward(5)
+	frank.pendown()
+	frank.forward(20)
+	frank.penup()
+
+
+def drawBody(number):
+	"""Holds all methods for drawing
+	the body. For every wrong answer
+	a body part is drawn."""
+	if(number == 6):
+		drawHead()
+	elif(number == 5):
+		drawTorso()
+	elif(number == 4):
+		leftArm()
+	elif(number == 3):
+		rightArm()
+	elif(number == 2):
+		leftLeg()
+	elif(number == 1):
+		rightLeg()
+	elif(number == 0):
+		drawFace()
 
 def drawTorso():
+	frank.setheading(270)
+	frank.penup()
+	frank.setx(50)
+	frank.sety(60)
 	frank.pendown()
 	frank.forward(100)
 	frank.backward(80)
 
 def leftArm():
-    frank.right(45)
-    frank.forward(30)
-    frank.penup()
-    frank.backward(30)
-    frank.pendown()
-    frank.left(45)
+	frank.setheading(270)
+	frank.penup()
+	frank.setx(49.99)
+	frank.sety(40)
+	frank.pendown()
+	frank.right(45)
+	frank.forward(30)
+	frank.penup()
+	frank.backward(30)
+	frank.pendown()
+	frank.left(45)
 
 def rightArm():
-    frank.left(45)
-    frank.forward(30)
-    frank.penup()
-    frank.backward(30)
-    frank.pendown()
-    frank.right(45)
+	frank.setheading(270)
+	frank.penup()
+	frank.setx(49.99)
+	frank.sety(40)
+	frank.pendown()
+	frank.left(45)
+	frank.forward(30)
+	frank.penup()
+	frank.backward(30)
+	frank.pendown()
+	frank.right(45)
 
 def leftLeg():
-    """X is: 49.9, Y is: -39.9"""
-    frank.penup()
-    frank.setx(49.9)
-    frank.sety(-39.9)
-    frank.pendown()
-    frank.right(45)
-    frank.forward(45)
-    frank.penup()
-    frank.backward(45)
-    frank.pendown()
-    frank.left(45)
+	"""X is: 49.9, Y is: -39.9"""
+	frank.setheading(270)
+	frank.penup()
+	frank.setx(49.9)
+	frank.sety(-39.9)
+	frank.pendown()
+	frank.right(45)
+	frank.forward(45)
+	frank.penup()
+	frank.backward(45)
+	frank.pendown()
+	frank.left(45)
 
 def rightLeg():
-    """X is: 49.9, Y is: -39.9"""
-    frank.penup()
-    frank.setx(49.9)
-    frank.sety(-39.9)
-    frank.pendown()
-    frank.left(45)
-    frank.forward(45)
-    frank.penup()
-    frank.backward(45)
-    frank.pendown()
-    frank.right(45)
+	"""X is: 49.9, Y is: -39.9"""
+	frank.setheading(270)
+	frank.penup()
+	frank.setx(49.9)
+	frank.sety(-39.9)
+	frank.pendown()
+	frank.left(45)
+	frank.forward(45)
+	frank.penup()
+	frank.backward(45)
+	frank.pendown()
+	frank.right(45)
+
+def drawHead():
+	frank.setheading(180)
+	frank.circle(20)
+	frank.left(90)
+	frank.penup()
+	frank.forward(40)
+
+def printFinalDeff():
+	"""Print definition for user"""
+	print("------------------------------------------------" +
+	"------------------------------")
+	print("DEFINITION: ", *FINAL_DEF)
+	print("------------------------------------------------"+
+	"------------------------------")
+
+def printFinalWord():
+	"""Print word for user"""
+	print("------------------------------------------------" +
+	"------------------------------")
+	print("WORD: ", *BLANKSTRING)
+	print("------------------------------------------------"+
+	"------------------------------")
+
+
 
 #welcome()
 fillDefinitions()
 answer = promptUser()
 word = returnWord(answer)
 returnDef(word)
+wn = turtle.Screen()		#create turtle screen (window)
+frank = turtle.Turtle()		#create turtle to use on window
+drawOutline()
 userAnswer(word)
-#drawOutline()
-#drawBody()
-#randWord()
-#returnWord()
+wn.mainloop()
