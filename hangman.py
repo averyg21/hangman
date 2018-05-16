@@ -1,5 +1,6 @@
 import turtle
 from random import randint
+#imports for gui
 
 #global variables
 FINAL_DEF = []
@@ -72,7 +73,7 @@ def returnWord(difficulty):
 		#input into hard word lists
 		DIF_LIST = ["jaundiced","cupidity","schadenfreude","blinkered",
 		"execrate","malapropism","hedge","tendentious","excoriate","limpid",
-		"histrionic"]
+		"histrionic","benighted"]
 		rand_end = len(DIF_LIST) - 1
 		randNum = randint(0,rand_end)
 		final_word = DIF_LIST[randNum]
