@@ -1,10 +1,346 @@
-import turtle
+######################Imports###################################
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
+from tkinter import StringVar
 from random import randint
+import turtle
+import atexit
+import sys
+######################Imports###################################
 
-#global variables
-FINAL_DEF = []
-DEFINITIONS = []
-BLANKSTRING = []
+####################Global Variables############################
+USER_WINDOW = tk.Tk()			#GUI used for user interaction
+FINAL_DEF = []					#holds the final definition
+DEFINITIONS = []				#holds ALL definitions (.txt file)
+LETTER_ANS = StringVar()		#User letter answer to check
+WORD_ANS = StringVar()			#User word answer to check
+DIFFICULTY = ""					#holds user's difficulty for the round
+ANS_FLAG = False				#checks if user selected difficulty
+GAME_OVER = False               #checks if user guessed or lost
+wordLabel = tk.Label()          #change word label text on buttonCLick
+defLabel = tk.Message()         #change def label text on buttonClik
+WORD = ""                       #holds word to be guessed
+BLANK_WORD = []                 #holds blanks string that will change throughout
+OUTPUTWORD = ""                 #word output based on blank_word[] changing
+CHANCE_COUNTER = 7              #counts the chances user has left to solve
+REPEAT_LIST = []                #checks if letter has already been used
+LETTER_COUNT = 0                #compare to word length if equal, word was guessed
+frank = turtle.Turtle()         #create turtle to move
+#####################Global Variables############################
+
+
+################Code for tkinter window###########################
+
+def createWindow(window):
+    '''Function creates gui window that user interacts with
+    Widgets are grouped by frames (top,middle,bottom).
+    wordLabel & defLabel are global so other methods can adjust'''
+    global wordLabel, defLabel
+
+    window.title("Hangman App")
+    window.geometry('800x500+0+0')
+    window.resizable(0,0)
+
+    topFrame = tk.Frame(window,width=800,height=150)
+    middleFrame = tk.Frame(window,width=800,height=200)
+    bottomFrame = tk.Frame(window,width=800,height=150)
+
+
+    window.grid_rowconfigure(1,weight=0)
+    window.grid_columnconfigure(0,weight=0)
+
+    topFrame.grid(row=0)
+    middleFrame.grid(row=5)
+    bottomFrame.grid(row=10)
+
+
+    #left side labels
+    label1 = ttk.Label(topFrame,text="Letter Guess: ")
+    label2 = ttk.Label(topFrame,text="Word Guess: ")
+
+    #middle labels
+    label3 = ttk.Label(middleFrame,text="Word:")
+    wordLabel = tk.Label(middleFrame,relief="solid")
+    label4 = ttk.Label(middleFrame,text="Definition:")
+    defLabel = tk.Message(middleFrame,relief="solid")
+
+    #set entry
+    letterBox = ttk.Entry(topFrame,textvariable=LETTER_ANS)
+    wordBox = ttk.Entry(topFrame,textvariable=WORD_ANS)
+
+    #right side buttons
+    letterButton = tk.Button(topFrame,text="Guess Letter",
+	command=guessLetterClick)
+    wordButton = tk.Button(topFrame,text="Guess Word",
+	command=guessWordClick)
+
+    #Bottom buttons
+    helpButton = tk.Button(bottomFrame,text="Help",command=helpClick)
+    easyButton = tk.Button(bottomFrame,text="Easy",command=easyClick)
+    medButton = tk.Button(bottomFrame,text="Medium",command=medClick)
+    hardButton = tk.Button(bottomFrame,text="Hard",command=hardClick)
+    closeButton = tk.Button(bottomFrame,text="Close",command=closeProg)
+
+
+    #changing the font
+    label1.config(font=44)
+    label2.config(font=44)
+
+    label3.config(font=33)
+    label4.config(font=33)
+    wordLabel.config(width=50,height=5,font=44)
+    defLabel.config(font=44,width=500)
+
+
+    label1.grid(row=0,column=0,pady=20)
+    label2.grid(row=1,column=0)
+
+    label3.grid(row=5,column=0)
+    wordLabel.grid(row=5,columnspan=13,column=1,pady=20,padx=20)
+    label4.grid(row=6,column=0)
+    defLabel.grid(row=6,columnspan=13,column=1)
+
+    letterBox.grid(row=0,column=1)
+    wordBox.grid(row=1,column=1)
+
+    letterButton.grid(row=0,column=2)
+    wordButton.grid(row=1,column=2)
+
+
+    helpButton.grid(row=10,column=0,pady=20,padx=20)
+    easyButton.grid(row=10,column=1)
+    medButton.grid(row=10,column=2)
+    hardButton.grid(row=10,column=3)
+    closeButton.grid(row=10,column=4,pady=20,padx=20)
+
+    helpButton.config(height=2, width=7)
+    closeButton.config(height=2,width=7)
+    easyButton.config(height=2, width=7,bg="green")
+    medButton.config(height=2,width=7,bg="yellow")
+    hardButton.config(height=2,width=7,bg="red")
+
+    #make user exit with close button
+    window.protocol('WM_DELETE_WINDOW',closeMessage)
+    window.deiconify()
+    wn = turtle.Screen()
+    drawOutline()
+
+    window.mainloop()
+
+#########################TKINTER code end########################
+
+def helpClick():
+    '''outputs help messages to the user'''
+    messagebox.showinfo("Help","Adjust blank window if you cannot" +
+    " see the hangman.")
+    messagebox.showinfo("Help","Click easy, medium, or hard" +
+    " for difficulty.")
+    messagebox.showinfo("Help","Input a single letter, or a word" +
+    " in the correct boxes.")
+    messagebox.showinfo("Help","Hangman will draw on every" +
+    " wrong answer.")
+    messagebox.showinfo("Help","If hangman is completed, you lose!")
+
+def closeProg():
+	'''Closes program when user clicks the close button'''
+	sys.exit(0)
+
+def easyClick():
+    '''Places easy into difficulty level. Calls fillDefinitions().
+    Returns a randomly generated word from returnWord(). Prints
+    definition and "blank" word to the screen.
+    '''
+    global ANS_FLAG, DIFFICULTY, WORD, OUTPUTWORD
+    if (ANS_FLAG == False):
+        ANS_FLAG = True
+        DIFFICULTY = "easy"
+        messagebox.showinfo("","Difficulty is: " + DIFFICULTY.upper())
+        fillDefinitions()
+        WORD = returnWord(DIFFICULTY)
+        returnDef(WORD)
+        initialBlankWord()
+        wordLabel.config(text=OUTPUTWORD)
+        defLabel.config(text=FINAL_DEF)
+
+def medClick():
+    '''Places medium into difficulty level. Calls fillDefinitions().
+    Returns a randomly generated word from returnWord(). Prints
+    definition and "blank" word to the screen.
+    '''
+    global ANS_FLAG, DIFFICULTY, WORD, OUTPUTWORD
+    if (ANS_FLAG == False):
+        ANS_FLAG = True
+        DIFFICULTY = "medium"
+        messagebox.showinfo("","Difficulty is: " + DIFFICULTY.upper())
+        fillDefinitions()
+        WORD = returnWord(DIFFICULTY)
+        returnDef(WORD)
+        initialBlankWord()
+        wordLabel.config(text=OUTPUTWORD)
+        defLabel.config(text=FINAL_DEF)
+
+def hardClick():
+    '''Places hard into difficulty level. Calls fillDefinitions().
+    Returns a randomly generated word from returnWord(). Prints
+    definition and "blank" word to the screen.
+    '''
+    global ANS_FLAG, DIFFICULTY, WORD, OUTPUTWORD
+    if (ANS_FLAG == False):
+        ANS_FLAG = True
+        DIFFICULTY = "hard"
+        messagebox.showinfo("","Difficulty is: " + DIFFICULTY.upper())
+        fillDefinitions()
+        WORD = returnWord(DIFFICULTY)
+        returnDef(WORD)
+        initialBlankWord()
+        wordLabel.config(text=OUTPUTWORD)
+        defLabel.config(text=FINAL_DEF)
+
+def initialBlankWord():
+    '''Populates the blank word list based on
+    the randomly generated word. Returns word with
+    dashes and spaces.'''
+    global WORD, BLANK_WORD, OUTPUTWORD, wordLabel
+    for x in WORD:
+        BLANK_WORD.append("- ")
+    OUTPUTWORD = ''.join(BLANK_WORD)
+
+def checkLetter(guess):
+    '''Function checks the complete list for the
+    inputted letter. If it's in then blank_word list will
+    populate. If not a limb will be drawn. Repeats will be
+    considered a wrong answer. & limb will be drawn'''
+    global WORD, BLANK_WORD, LETTER_COUNT, GAME_OVER, REPEAT_LIST
+    word_length = len(WORD)
+    flag = False
+    skip = False
+
+    for letter in REPEAT_LIST:
+        if(guess.lower() == letter):
+            skip = True
+            break
+
+    for i in range(0,word_length):
+        if(guess.lower() == WORD[i].lower() and skip == False):
+            flag = True
+            REPEAT_LIST.append(guess.lower())
+            BLANK_WORD[i] = guess.lower() + " "
+            LETTER_COUNT = LETTER_COUNT + 1
+            if(LETTER_COUNT == word_length):
+                GAME_OVER = True
+                messagebox.showinfo("Won!","You got the word!")
+
+    OUTPUTWORD = ''.join(BLANK_WORD)
+    wordLabel.config(text=OUTPUTWORD)
+    checkComplete()
+
+    if(skip == True):
+        messagebox.showinfo("","Letter already entered.")
+        drawBody(CHANCE_COUNTER)
+        subtractChances()
+        checkChances()
+    else:
+        if(flag == False):
+            messagebox.showinfo("","Letter not in word!")
+            drawBody(CHANCE_COUNTER)
+            subtractChances()
+            checkChances()
+
+def checkWord(guess):
+    '''Take word input and compare it to
+    the real word. If correct user wins,
+    if not body part will be drawn on hangman.
+    '''
+    global WORD, wordLabel, GAME_OVER
+    isWord = True
+    wordLength = len(WORD)
+    if(len(guess) == wordLength):
+        for i in range(0,wordLength):
+            if (guess[i].lower() != WORD[i].lower()):
+                isWord = False
+                messagebox.showinfo("","Word guessed is not correct.")
+                drawBody(CHANCE_COUNTER)
+                subtractChances()
+                checkChances()
+                break
+    else:
+        messagebox.showinfo("","Word guessed is not correct.")
+        drawBody(CHANCE_COUNTER)
+        subtractChances()
+        checkChances()
+        isWord = False
+
+    if(isWord == True):
+        messagebox.showinfo("Correct","You got the correct word!")
+        wordLabel.config(text=WORD.upper())
+        GAME_OVER = True
+
+def checkComplete():
+    '''If game is finished output winning message'''
+    global GAME_OVER
+    if(GAME_OVER == True):
+        messagebox.showinfo("You Won!","The word was: " +
+        WORD.upper() + "!")
+
+def checkChances():
+    '''Check if chances are 0. If they are then
+    game is over'''
+    global GAME_OVER, CHANCE_COUNTER, WORD
+    if(CHANCE_COUNTER == 0):
+        GAME_OVER = True
+        messagebox.showinfo("Lost","You lost, word was: "
+        + WORD.upper() + "!")
+        wordLabel.config(text=WORD)
+
+def subtractChances():
+    '''subtract one from chances.'''
+    global CHANCE_COUNTER
+    CHANCE_COUNTER = CHANCE_COUNTER - 1
+
+def guessLetterClick():
+    '''Take the user's letter guess. Checks if
+    difficulty has been set & validates letter. If so,
+    the method will send letter to checkLetter()
+    to check if its in the word.
+    '''
+    global ANS_FLAG, CHANCE_COUNTER
+    if(GAME_OVER == False):
+        if(ANS_FLAG == True):
+            letter = LETTER_ANS.get()
+
+            if(len(letter) == 1 and letter.isalpha()):
+                checkLetter(letter)
+            else:
+                messagebox.showinfo("","Input a SINGLE LETTER!")
+                drawBody(CHANCE_COUNTER)
+                subtractChances()
+                checkChances()
+        else:
+            messagebox.showinfo("","Select a difficulty!")
+    else:
+        messagebox.showinfo("Complete","The game is over!")
+
+def guessWordClick():
+    '''Take the users word guess. Checks if
+    difficulty has been set. If so then method will
+    compare input word to actual word.'''
+    global ANS_FLAG, GAME_OVER
+    if(GAME_OVER == False):
+    	if(ANS_FLAG == True):
+            word = WORD_ANS.get()
+            if(word.isalpha()):
+                checkWord(word)
+            else:
+                messagebox.showinfo("","Word can only contain LETTERS!")
+                drawBody(CHANCE_COUNTER)
+                subtractChances()
+                checkChances()
+    	else:
+    		messagebox.showinfo("","Select a difficulty!")
+    else:
+        messagebox.showinfo("Complete","The game is over!")
+
 
 def fillDefinitions():
 	"""Populate the definition lists with dictionary"""
@@ -72,7 +408,9 @@ def returnWord(difficulty):
 		#input into hard word lists
 		DIF_LIST = ["jaundiced","cupidity","schadenfreude","blinkered",
 		"execrate","malapropism","hedge","tendentious","excoriate","limpid",
-		"histrionic"]
+		"histrionic","benighted","arch","phantasmagorical","disabuse",
+		"gerrymander","jejune","mulct","sartorial","pollyannaish","apotheosis",
+		"sybarite","venial","sangfroid","bilious","propitiate"]
 		rand_end = len(DIF_LIST) - 1
 		randNum = randint(0,rand_end)
 		final_word = DIF_LIST[randNum]
@@ -100,128 +438,7 @@ def returnDef(word):
 			else:
 				continue
 
-	printFinalDeff()
-
-def welcome():
-	"""Welcome message for the game"""
-	print("Welcome to the hangman game.")
-	print("If you guess the word before")
-	print("the hangman is built, you win!\n")
-
-def promptUser():
-	"""Ask the user for difficulty of the word
-	& return the correct answer.
-	"""
-	flag = True
-
-	while(flag == True):
-		print("Difficulty levels are: Easy, Medium, & Hard")
-		answer = input("Input difficulty: ")
-
-		if(answer.lower() == "easy" or answer.lower() == "e"):
-			answer = "easy"
-			print("You've answered Easy.\n")
-			flag = False
-		elif(answer.lower() == "medium" or answer.lower() == "m"):
-			answer = "medium"
-			print("You've answered Medium.\n")
-			flag = False
-		elif(answer.lower() == "hard" or answer.lower() == "h"):
-			answer = "hard"
-			print("You've answered Hard.\n")
-			flag = False
-		else:
-			print("\nPlease enter a correct answer.\n")
-
-	return answer
-
-def userAnswer(validWord):
-	"""Get answer from user. Let them guess whole word or one
-	letter at a time. Also draws body on wrong answer throgh
-	counter and drawBody() method
-	"""
-	counter = 6
-	wordLength = len(validWord)
-	complete = wordLength
-	repeatList = []
-	for letter in validWord:
-		BLANKSTRING.append("_")
-	while True and counter >= 0:
-		try:
-			#guessing the word
-			printFinalWord()
-			guessType = int(input("\n1 to guess word, 2 to guess letter," +
-			" 3 for definition: "))
-			if (guessType == 1):
-				ansGuess = input("Guess the word: ")
-				if(ansGuess.lower() == validWord.lower()):
-					print("\nYou guessed the correct answer!")
-					print("Word was: " + validWord + "\n")
-					print("Exit the hangman window to" +
-					" close the program...")
-					break
-				else:
-					print("Not the answer")
-					drawBody(counter)
-					counter = counter - 1
-
-			#individually guessing letters
-			elif (guessType == 2):
-				#initialize list to hold letters & retrive
-				#the length of the word, set flag to see if
-				#anything was entered into the list
-				flag = False
-
-				ansLetter = input("Input ONE letter: ")
-				check = len(ansLetter)
-				#check to see if your receiving one valid letter
-				if (ansLetter.lower() not in repeatList):
-					if(check == 1 and ansLetter.isalpha()):
-						for x in range(0,wordLength):
-							if(ansLetter.lower() == validWord[x]):
-								BLANKSTRING[x] = ansLetter.lower()
-								complete = complete - 1
-								flag = True
-								repeatList.append(ansLetter.lower())
-
-						#print message whether right or wrong
-						if(flag == False):
-							print('\nLetter not in word.')
-							drawBody(counter)
-							counter = counter - 1
-						else:
-							print()
-
-						if (complete == 0):
-							print("\nYou guessed the word!")
-							print("Word was: " + validWord + "\n")
-							print("Exit the hangman window to" +
-							" close the program...")
-							break
-					else:
-						print("INPUT ONLY ONE VALID LETTER! GUESS TAKEN AWAY!")
-						drawBody(counter)
-						counter = counter - 1
-				else:
-					print("Letter already input, guess taken away")
-					drawBody(counter)
-					counter = counter - 1
-
-			elif(guessType == 3):
-				print()
-				printFinalDeff()
-
-			else:
-				print("Please input a 1 2 or 3.\n")
-				continue
-		except ValueError:
-			print("Please enter a correct NUMBER!\n")
-
-	if(counter < 0):
-		print("\nSorry you didn't solve for the word.")
-		print("Word was: ", validWord)
-		print("Exit the hangman window to close the program...")
-
+	#printFinalDeff()
 
 def drawOutline():
 	"""Initially reset the starting position then draw the outline"""
@@ -280,19 +497,19 @@ def drawBody(number):
 	"""Holds all methods for drawing
 	the body. For every wrong answer
 	a body part is drawn."""
-	if(number == 6):
+	if(number == 7):
 		drawHead()
-	elif(number == 5):
+	elif(number == 6):
 		drawTorso()
-	elif(number == 4):
+	elif(number == 5):
 		leftArm()
-	elif(number == 3):
+	elif(number == 4):
 		rightArm()
-	elif(number == 2):
+	elif(number == 3):
 		leftLeg()
-	elif(number == 1):
+	elif(number == 2):
 		rightLeg()
-	elif(number == 0):
+	elif(number == 1):
 		drawFace()
 
 def drawTorso():
@@ -365,31 +582,8 @@ def drawHead():
 	frank.penup()
 	frank.forward(40)
 
-def printFinalDeff():
-	"""Print definition for user"""
-	print("------------------------------------------------" +
-	"------------------------------")
-	print("DEFINITION: ", *FINAL_DEF)
-	print("------------------------------------------------"+
-	"------------------------------")
+def closeMessage():
+    '''Use the close button to close'''
+    messagebox.showinfo("Exit","Use close button to exit program.")
 
-def printFinalWord():
-	"""Print word for user"""
-	print("------------------------------------------------" +
-	"------------------------------")
-	print("WORD: ", *BLANKSTRING)
-	print("------------------------------------------------"+
-	"------------------------------")
-
-
-
-#welcome()
-fillDefinitions()
-answer = promptUser()
-word = returnWord(answer)
-returnDef(word)
-wn = turtle.Screen()		#create turtle screen (window)
-frank = turtle.Turtle()		#create turtle to use on window
-drawOutline()
-userAnswer(word)
-wn.mainloop()
+createWindow(USER_WINDOW)
