@@ -586,4 +586,5 @@ def closeMessage():
     '''Use the close button to close'''
     messagebox.showinfo("Exit","Use close button to exit program.")
 
+
 createWindow(USER_WINDOW)
