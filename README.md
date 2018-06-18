@@ -6,7 +6,7 @@ User must guess the word before the hangman is drawn to win.
 
 ## To run program:
 1. Install python 3 on your computer, if you don't have it.
-2. Download the hangman app by downloading the repository. (Green clone or download button)
+2. Make sure your on the master branch then download the repository. (Green clone or download button)
 3. Extract folder to desired path.
 4. Open your command prompt and change to the folder's directory.
 5. Run "python hangman.py" inside the folder.
